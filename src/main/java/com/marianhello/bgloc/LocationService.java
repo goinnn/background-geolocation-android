@@ -36,7 +36,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
 
-import com.marianhello.backgroundgeolocation.R;
 import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
 import com.marianhello.bgloc.data.ConfigurationDAO;
@@ -299,7 +298,7 @@ public class LocationService extends Service {
 
         public Notification getNotification(String title, String text, String largeIcon, String smallIcon, String color) {
             // Build a Notification required for running service in foreground.
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationService.this);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationService.this, NOTIF_CHANNEL_ID);
 
             builder.setContentTitle(title);
             builder.setContentText(text);
@@ -325,11 +324,11 @@ public class LocationService extends Service {
 
             // Android Oreo notifications require registered NotificationChannel
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                CharSequence appName = getString(R.string.app_name);
+                String appName = getStringResource("app_name");
                 NotificationChannel channel = new NotificationChannel(NOTIF_CHANNEL_ID, appName, NotificationManager.IMPORTANCE_DEFAULT);
                 NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.createNotificationChannel(channel);
-                builder.setChannel(NOTIF_CHANNEL_ID);
+                builder.setChannelId(NOTIF_CHANNEL_ID);
             }
 
             Notification notification = builder.build();
