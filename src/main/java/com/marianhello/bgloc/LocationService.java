@@ -11,6 +11,7 @@ package com.marianhello.bgloc;
 
 import android.accounts.Account;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -35,6 +36,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
 
+import com.marianhello.backgroundgeolocation.R;
 import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
 import com.marianhello.bgloc.data.ConfigurationDAO;
@@ -111,6 +113,7 @@ public class LocationService extends Service {
     private static Boolean isRunning = false;
     /** notification id */
     private static int NOTIF_ID = 1;
+    private static String NOTIF_CHANNEL_ID = "bglocservice";
 
     private static final int ONE_MINUTE_IN_MILLIS = 1000 * 60;
 
@@ -297,6 +300,7 @@ public class LocationService extends Service {
         public Notification getNotification(String title, String text, String largeIcon, String smallIcon, String color) {
             // Build a Notification required for running service in foreground.
             NotificationCompat.Builder builder = new NotificationCompat.Builder(LocationService.this);
+
             builder.setContentTitle(title);
             builder.setContentText(text);
             if (smallIcon != null && !smallIcon.isEmpty()) {
@@ -318,6 +322,15 @@ public class LocationService extends Service {
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent contentIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT);
             builder.setContentIntent(contentIntent);
+
+            // Android Oreo notifications require registered NotificationChannel
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                CharSequence appName = getString(R.string.app_name);
+                NotificationChannel channel = new NotificationChannel(NOTIF_CHANNEL_ID, appName, NotificationManager.IMPORTANCE_DEFAULT);
+                NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.createNotificationChannel(channel);
+                builder.setChannel(NOTIF_CHANNEL_ID);
+            }
 
             Notification notification = builder.build();
             notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
